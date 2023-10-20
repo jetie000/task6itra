@@ -1,0 +1,116 @@
+.main-window {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+}
+
+/* Boards */
+
+.boards-header {
+    background-color: rgb(255, 165, 62) !important;
+}
+
+.card-board {
+    width: 100px;
+}
+
+#boards-list {
+    padding-top: 115px;
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+.btn-main {
+    color: rgb(0, 0, 0);
+    background-color: rgb(255, 239, 222) !important;
+    border-color: rgb(255, 239, 222) !important;
+}
+
+.btn-second {
+    color: rgb(0, 0, 0);
+    background-color: rgb(255, 239, 222) !important;
+    border-color: rgb(255, 185, 111) !important;
+}
+
+#boards-list .card {
+    flex-basis: 300px;
+    height: 168px;
+}
+
+#card-add {
+    cursor: pointer;
+}
+
+/* Board */
+
+/* Board-Info */
+
+#info{
+    top: 30px;
+    left: 50px;
+    border-radius: 50px;
+}
+
+/* Board-Moves */
+
+#moves{
+    bottom: calc(50% + 300px);
+    left: 50px;
+    border-radius: 50px;
+}
+
+
+/* Board-Tools */
+
+#tools {
+    left: 50px;
+    bottom: calc(50% - 200px);
+    border-radius: 50px;
+}
+
+.tool-icon {
+    height: 54px;
+    width: 54px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.tool-icon:hover{
+    background-color: rgb(212, 212, 212);
+}
+
+.input-label [type=radio] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.input-label [type=radio]:checked+div {
+    color: black;
+    background-color: white;
+    mix-blend-mode: difference;
+}
+
+/* Board-Options */
+
+#options{
+    bottom: calc(50% - 200px);
+    left: 130px;
+    border-radius: 20px;
+}
+
+#widthRange{
+    width: 215px;
+}
+
+/* Board-Leave */
+
+#leave{
+    bottom: 50px;
+    left: 50px;
+    border-radius: 50px;
+}

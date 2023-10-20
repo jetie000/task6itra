@@ -92,7 +92,7 @@
 .input-label [type=radio]:checked+div {
     color: black;
     background-color: white;
-    mix-blend-mode: difference;
+    filter: invert(100%);
 }
 
 /* Board-Options */
@@ -114,3 +114,16 @@
     left: 50px;
     border-radius: 50px;
 }
+
+/* Canvas */
+
+canvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+  }

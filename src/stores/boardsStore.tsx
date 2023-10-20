@@ -8,18 +8,22 @@ interface BoardState {
     setUser: (user: string) => void
     currentBoard: IBoard
     setCurrentBoard: (board: IBoard) => void
+    leaveBoard: () => void
     users: string[]
     boards: IBoard[]
     setBoards: () => void
     addBoard: (boardName: string) => void
     drawings: IDrawing[]
     setDrawings: () => void
+    addDrawing: (drawing: IDrawing) => void
     width: number
     setWidth: (width: number) => void
     strokeColor: string
     setStrokeColor: (color: string) => void 
     fillColor: string
     setFillColor: (color: string) => void 
+    currentTool: string
+    setCurrentTool: (tool: string) => void
 }
 
 export const useBoardStore = create<BoardState>((set, get) => ({
@@ -37,6 +41,12 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         localStorage.setItem(variables.$CURRENT_BOARD, JSON.stringify(board));
         set({
             currentBoard: board
+        })
+    },
+    leaveBoard: () =>{
+        localStorage.removeItem(variables.$CURRENT_BOARD);
+        set({
+            currentBoard: undefined
         })
     },
     boards: [],
@@ -76,6 +86,28 @@ export const useBoardStore = create<BoardState>((set, get) => ({
             })
         }
     },
+    addDrawing: async (drawing: IDrawing) => {
+        await fetch(variables.API_URL + '/Board/postdraw?boardId='+get().currentBoard.id, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: 0,
+                type: drawing.type,
+                lineWidth: drawing.lineWidth,
+                strokeColor: drawing.strokeColor,
+                fillColor: drawing.fillColor,
+                posX: drawing.posX,
+                posY: drawing.posY,
+                username: drawing.username
+              })
+        })
+        set((state) => ({
+            drawings: [...state.drawings, drawing]
+        }))
+    },
     width: Number(localStorage.getItem(variables.$WIDTH)) || 1,
     setWidth: (width: number) => {
         localStorage.setItem(variables.$WIDTH, String(width));
@@ -95,6 +127,12 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         localStorage.setItem(variables.$FILL_COLOR, color);
         set({
             fillColor: color
+        })
+    },
+    currentTool: 'line',
+    setCurrentTool: (tool: string) => {
+        set({
+            currentTool: tool
         })
     }
 }))

@@ -31,7 +31,7 @@ useEffect(()=>{
     <BrowserRouter>
       <Routes>
         <Route path='/boards' element={<Boards />} />
-        {boards.length > 0 && boards.map(board => <Route key={board.id} path={'/boards/'+board.id} element={<Board board={board}/>} />)}
+        {boards.length > 0 && boards.map(board => <Route key={board.id} path={'/boards/'+board.id} element={<Board/>} />)}
         <Route path='*' element={<Navigate to={'/boards/'+ currentBoardId} />} />
       </Routes>
     </BrowserRouter>

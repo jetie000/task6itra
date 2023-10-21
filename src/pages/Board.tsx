@@ -2,10 +2,15 @@ import { useNavigate } from "react-router-dom";
 import { IBoard } from "../interfaces/board.interface";
 import { useBoardStore } from "../stores/boardsStore";
 import Canvas from "./Canvas";
+import { useEffect } from "react";
+import { variables } from "../Variables";
 
 function Board() {
     const user = useBoardStore(state => state.user);
-    const currentBoard = useBoardStore(state => state.currentBoard);
+    const boards = useBoardStore(state => state.boards);
+    const setBoards = useBoardStore(state => state.setBoards);
+    const setDrawings = useBoardStore(state => state.setDrawings);
+    const currentBoardId = useBoardStore(state => state.currentBoardId);
     const leaveBoard = useBoardStore(state => state.leaveBoard);
     const width = useBoardStore(state => state.width);
     const setWidth = useBoardStore(state => state.setWidth);
@@ -13,13 +18,20 @@ function Board() {
     const setStrokeColor = useBoardStore(state => state.setStrokeColor);
     const fillColor = useBoardStore(state => state.fillColor);
     const setFillColor = useBoardStore(state => state.setFillColor);
+    const isFill = useBoardStore(state => state.isFill);
+    const setIsFill = useBoardStore(state => state.setIsFill);
     const setCurrentTool = useBoardStore(state => state.setCurrentTool);
 
     const navigate = useNavigate();
 
+    useEffect(() => {
+        setBoards();
+        setDrawings();
+    }, []);
+
     const toogleOptions = () => {
         const options = document.getElementById('options')!;
-        if(options.classList.contains('d-none'))
+        if (options.classList.contains('d-none'))
             options.classList.replace('d-none', 'd-flex');
         else
             options.classList.replace('d-flex', 'd-none');
@@ -28,13 +40,13 @@ function Board() {
 
     return (
         <div id="board" className="position-absolute main-window">
-            <Canvas/>
-            <div id="info" className="position-fixed border d-flex flex-column">
+            <Canvas />
+            <div id="info" className="position-fixed border d-flex flex-column bg-white">
                 <div className="fs-4 m-2 p-2">
-                    {currentBoard.name}
+                    {boards.find(board => board.id == currentBoardId)?.name}
                 </div>
             </div>
-            <div id="moves" className="position-fixed border d-flex">
+            <div id="moves" className="position-fixed border d-flex bg-white">
                 <div className="rounded-circle tool-icon m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-90deg-left fs-3" viewBox="0 0 16 16">
                         <path fillRule="evenodd" d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4z" />
@@ -46,9 +58,9 @@ function Board() {
                     </svg>
                 </div>
             </div>
-            <div id="tools" className="position-fixed border d-flex flex-column">
+            <div id="tools" className="position-fixed border d-flex flex-column bg-white">
                 <label className="input-label rounded-circle">
-                    <input onClick={e => setCurrentTool(e.currentTarget.value)} type="radio" name="tools" value="line" defaultChecked/>
+                    <input onClick={e => setCurrentTool(e.currentTarget.value)} type="radio" name="tools" value="line" defaultChecked />
                     <div className="rounded-circle p-3 tool-icon m-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-brush-fill fs-3" viewBox="0 0 16 16">
                             <path d="M15.825.12a.5.5 0 0 1 .132.584c-1.53 3.43-4.743 8.17-7.095 10.64a6.067 6.067 0 0 1-2.373 1.534c-.018.227-.06.538-.16.868-.201.659-.667 1.479-1.708 1.74a8.118 8.118 0 0 1-3.078.132 3.659 3.659 0 0 1-.562-.135 1.382 1.382 0 0 1-.466-.247.714.714 0 0 1-.204-.288.622.622 0 0 1 .004-.443c.095-.245.316-.38.461-.452.394-.197.625-.453.867-.826.095-.144.184-.297.287-.472l.117-.198c.151-.255.326-.54.546-.848.528-.739 1.201-.925 1.746-.896.126.007.243.025.348.048.062-.172.142-.38.238-.608.261-.619.658-1.419 1.187-2.069 2.176-2.67 6.18-6.206 9.117-8.104a.5.5 0 0 1 .596.04z" />
@@ -93,7 +105,11 @@ function Board() {
                     </svg>
                 </div>
             </div>
-            <div id="options" className="position-fixed d-none flex-column border p-2">
+            <div id="options" className="position-fixed d-none flex-column border p-2 bg-white">
+                <div className="d-flex flex-wrap align-items-center mb-2">
+                    <label htmlFor="isFillCheckBox" className="form-label fs-5 mb-0 me-2">Fill:</label>
+                    <input onChange={e => setIsFill(e.target.checked)} checked={isFill} type="checkbox" className="form-check-input" id="isFillCheckBox" />
+                </div>
                 <label htmlFor="strokeColor" className="form-label fs-5">Stroke color: {strokeColor}</label>
                 <input onChange={e => setStrokeColor(e.target.value)} type="color" id="strokeColor" name="head" defaultValue={strokeColor} />
                 <label htmlFor="fillColor" className="form-label fs-5">Fill color: {fillColor}</label>
@@ -101,8 +117,8 @@ function Board() {
                 <label htmlFor="widthRange" className="form-label fs-5">Width: {width}</label>
                 <input onChange={e => setWidth(Number(e.target.value))} type="range" defaultValue={width} min={1} max={50} step={1} className="form-range" id="widthRange" />
             </div>
-            <div id="leave" className="position-fixed border">
-                <div onClick={() => {leaveBoard(); navigate('/boards');}} className="rounded-circle tool-icon m-2">
+            <div id="leave" className="position-fixed border bg-white">
+                <div onClick={() => { leaveBoard(); navigate('/boards'); }} className="rounded-circle tool-icon m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-box-arrow-left fs-3" viewBox="0 0 16 16">
                         <path fillRule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z" />
                         <path fillRule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z" />

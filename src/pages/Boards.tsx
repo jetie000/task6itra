@@ -5,10 +5,21 @@ import './Boards.css';
 import UsernameModal from "./UsernameModal";
 import AddBoardModal from "./AddBoardModal";
 import { Modal } from "bootstrap";
+import { useNavigate } from "react-router-dom";
 
 function Boards() {
+    const navigate = useNavigate();
+    
     const user = useBoardStore(state => state.user);
     const boards = useBoardStore(state => state.boards);
+    const currentBoardId = useBoardStore(state => state.currentBoardId);
+
+    useEffect(() => {
+        if(currentBoardId){
+            console.log('navigating')
+            navigate('/boards/' + currentBoardId);
+        }
+    }, [currentBoardId]);
 
     const showAddModal = () => {
         const myModal = Modal.getOrCreateInstance(document.querySelector('#add-board-modal')!);
@@ -43,8 +54,8 @@ function Boards() {
                 {boards.length > 0 ?
                     <>
                         {boards.map(board => <BoardCard key={board.id} board={board} />)}
-                        <div id="card-add col"
-                            className="card card-board ms-3"
+                        <div id="card-add"
+                            className="card card-board ms-3 col"
                             onClick={showAddModal}
                             >
                             <div className="card-body d-flex">

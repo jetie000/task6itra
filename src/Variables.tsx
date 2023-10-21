@@ -4,5 +4,6 @@ export const variables = {
     $CURRENT_BOARD: "current_board",
     $WIDTH: "paint_width",
     $STROKE_COLOR: "stroke_color",
-    $FILL_COLOR: "fill_color"
+    $FILL_COLOR: "fill_color",
+    $IS_FILL: 'is_fill'
 }

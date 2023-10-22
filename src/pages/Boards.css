@@ -60,6 +60,14 @@
     user-select: none;
 }
 
+/* Board-Info-Users */
+
+#info-users {
+    top: 30px;
+    right: 50px;
+    border-radius: 50px;
+}
+
 /* Board-Moves */
 
 #moves {

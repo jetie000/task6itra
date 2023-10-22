@@ -13,6 +13,7 @@ function Board() {
     const setBoards = useBoardStore(state => state.setBoards);
     const setDrawings = useBoardStore(state => state.setDrawings);
     const currentBoardId = useBoardStore(state => state.currentBoardId);
+    const currentBoardUsers = useBoardStore(state => state.currentBoardUsers);
     const leaveBoard = useBoardStore(state => state.leaveBoard);
     const width = useBoardStore(state => state.width);
     const setWidth = useBoardStore(state => state.setWidth);
@@ -52,10 +53,6 @@ function Board() {
     //     link.click();
     // }
 
-
-
-    
-
     return (
         <>
             <div id="board" className="main-window d-flex">
@@ -65,6 +62,14 @@ function Board() {
                 <div className="fs-4 m-2 p-2">
                     {boards.find(board => board.id == currentBoardId)?.name}
                 </div>
+            </div>
+            <div id="info-users" className="position-fixed border d-flex flex-column bg-white">
+                <div className="fs-4 m-2 p-2">
+                    Users:
+                </div>
+                {currentBoardUsers && currentBoardUsers.map(user => <div key={user} className="fs-4 m-2 p-2">
+                    {user}
+                </div>)}
             </div>
             <div id="moves" className="position-fixed border d-flex bg-white">
                 <div className="rounded-circle tool-icon m-2">

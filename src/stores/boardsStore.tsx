@@ -8,8 +8,9 @@ interface BoardState {
     setUser: (user: string) => void
     currentBoardId: number
     setCurrentBoardId: (boardId: number) => void
+    currentBoardUsers: string[]
+    setCurrentBoardUsers: (user: string) => void
     leaveBoard: () => void
-    users: string[]
     boards: IBoard[]
     setBoards: () => void
     addBoard: (boardName: string) => void
@@ -48,6 +49,13 @@ export const useBoardStore = create<BoardState>((set, get) => ({
             currentBoardId: boardId
         })
     },
+    currentBoardUsers: [],
+    setCurrentBoardUsers: (user: string) => {
+        if (get().currentBoardUsers.includes(user) == false)
+            set((state) => ({
+                currentBoardUsers: [...state.currentBoardUsers, user]
+            }))
+    },
     leaveBoard: () => {
         localStorage.removeItem(variables.$CURRENT_BOARD);
         set({
@@ -80,7 +88,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         })
         get().setBoards();
     },
-    users: [],
     drawings: [],
     setDrawings: async () => {
         if (get().user) {
@@ -124,14 +131,14 @@ export const useBoardStore = create<BoardState>((set, get) => ({
             width: width
         })
     },
-    strokeColor: localStorage.getItem(variables.$STROKE_COLOR) || '#fff',
+    strokeColor: localStorage.getItem(variables.$STROKE_COLOR) || '#000',
     setStrokeColor: (color: string) => {
         localStorage.setItem(variables.$STROKE_COLOR, color);
         set({
             strokeColor: color
         })
     },
-    fillColor: localStorage.getItem(variables.$FILL_COLOR) || '#fff',
+    fillColor: localStorage.getItem(variables.$FILL_COLOR) || '#000',
     setFillColor: (color: string) => {
         localStorage.setItem(variables.$FILL_COLOR, color);
         set({

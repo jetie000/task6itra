@@ -10,6 +10,8 @@ const Canvas = () => {
     const user = useBoardStore(state => state.user);
     const boards = useBoardStore(state => state.boards);
     const currentBoardId = useBoardStore(state => state.currentBoardId);
+    const currentBoardUsers = useBoardStore(state => state.currentBoardUsers);
+    const setCurrentBoardUsers = useBoardStore(state => state.setCurrentBoardUsers);
     const width = useBoardStore(state => state.width);
     const strokeColor = useBoardStore(state => state.strokeColor);
     const fillColor = useBoardStore(state => state.fillColor);
@@ -34,12 +36,11 @@ const Canvas = () => {
             if (isFill) {
                 const link = document.createElement('a');
                 link.download = `${Date.now()}.jpg`;
-                console.log(canvasRef.current)
                 link.href = canvasRef.current.toDataURL();
                 link.click();
             }
-            joinRoom(user);
         }
+        joinRoom(user);
     }, []);
 
     useEffect(() => {
@@ -70,19 +71,22 @@ const Canvas = () => {
                 .withAutomaticReconnect()
                 .configureLogging(LogLevel.Information)
                 .build();
-            connection.on("JoinMessage", (message: string) => {
+            let RoomIdCon = String(currentBoardId);
+            connection.on("JoinMessage", async (message: string) => {
                 console.log('message: ' + message);
-                
+                await connection.invoke("SendUsername", { UserName, RoomIdCon })
             });
             connection.on("ReceiveMessage", (drawing: IDrawing) => {
-                if(drawing.username != user){
+                if (drawing.username != user) {
                     addDrawing(drawing);
                     drawDrawing(canvasCtxRef.current!, drawing);
                 }
-                console.log(drawing);
+            });
+
+            connection.on("ReceiveUsernameMessage", (userName: string) => {
+                setCurrentBoardUsers(userName);
             });
             await connection.start();
-            let RoomIdCon = String(currentBoardId);
             await connection.invoke("JoinRoom", { UserName, RoomIdCon });
             setConnection(connection);
         }
@@ -147,22 +151,22 @@ const Canvas = () => {
         switch (currentTool) {
             case 'line':
                 canvasCtxRef.current?.beginPath();
-                console.log('start drawing ' + e.pageX + ' ' + e.pageY);
+                console.log('start drawing ' + Math.round(e.pageX/scale) + ' ' + Math.round(e.pageY/scale));
                 break;
             case 'eraser':
                 canvasCtxRef.current!.strokeStyle = '#ffffff';
                 canvasCtxRef.current?.beginPath();
-                console.log('start erasing ' + e.pageX + ' ' + e.pageY);
+                console.log('start erasing ' + Math.round(e.pageX/scale) + ' ' + Math.round(e.pageY/scale));
                 break;
             case 'rectangle': case 'circle': case 'triangle':
                 canvasCtxRef.current?.beginPath();
                 snapshot = canvasCtxRef.current?.getImageData(0, 0, document.getElementById('canvas')?.clientWidth!, document.getElementById('canvas')?.clientHeight!)!;
-                posX.push(e.pageX);
-                posY.push(e.pageY);
+                posX.push(Math.round(e.pageX/scale));
+                posY.push(Math.round(e.pageY/scale));
                 break;
             case 'move':
-                posXmove = e.pageX;
-                posYmove = e.pageY;
+                posXmove = Math.round(e.pageX/scale);
+                posYmove = Math.round(e.pageY/scale);
         }
     }
 
@@ -186,21 +190,21 @@ const Canvas = () => {
             return;
         switch (currentTool) {
             case 'line': case 'eraser':
-                posX.push(e.pageX);
-                posY.push(e.pageY);
-                canvasCtxRef.current?.lineTo(e.pageX, e.pageY);
+                posX.push(Math.round(e.pageX/scale));
+                posY.push(Math.round(e.pageY/scale));
+                canvasCtxRef.current?.lineTo(Math.round(e.pageX/scale), Math.round(e.pageY/scale));
                 canvasCtxRef.current?.stroke();
                 break;
             case 'rectangle':
                 canvasCtxRef.current?.putImageData(snapshot, 0, 0);
                 isFill
-                    ? canvasCtxRef.current?.fillRect(e.pageX, e.clientY, posX[0] - e.pageX, posY[0] - e.pageY)
-                    : canvasCtxRef.current?.strokeRect(e.pageX, e.clientY, posX[0] - e.pageX, posY[0] - e.pageY);
+                    ? canvasCtxRef.current?.fillRect(Math.round(e.pageX/scale), Math.round(e.pageY/scale), posX[0] - Math.round(e.pageX/scale), posY[0] - Math.round(e.pageY/scale))
+                    : canvasCtxRef.current?.strokeRect(e.pageX, Math.round(e.pageY/scale), posX[0] - Math.round(e.pageX/scale), posY[0] - Math.round(e.pageY/scale));
                 break;
             case 'circle':
                 canvasCtxRef.current?.putImageData(snapshot, 0, 0);
                 canvasCtxRef.current?.beginPath();
-                let radius = Math.sqrt(Math.pow(posX[0] - e.pageX, 2) + Math.pow(posY[0] - e.pageY, 2));
+                let radius = Math.sqrt(Math.pow(posX[0] - Math.round(e.pageX/scale), 2) + Math.pow(posY[0] - Math.round(e.pageY/scale), 2));
                 canvasCtxRef.current?.arc(posX[0], posY[0], radius, 0, 2 * Math.PI);
                 isFill
                     ? canvasCtxRef.current?.fill()
@@ -210,26 +214,26 @@ const Canvas = () => {
                 canvasCtxRef.current?.putImageData(snapshot, 0, 0);
                 canvasCtxRef.current?.beginPath();
                 canvasCtxRef.current?.moveTo(posX[0], posY[0]);
-                canvasCtxRef.current?.lineTo(e.pageX, e.pageY);
-                canvasCtxRef.current?.lineTo(posX[0] * 2 - e.pageX, e.pageY);
+                canvasCtxRef.current?.lineTo(Math.round(e.pageX/scale), Math.round(e.pageY/scale));
+                canvasCtxRef.current?.lineTo(posX[0] * 2 - Math.round(e.pageX/scale), Math.round(e.pageY/scale));
                 canvasCtxRef.current?.closePath();
                 canvasCtxRef.current?.stroke();
                 break;
             case 'move':
-                window.scrollBy(posXmove - e.pageX, posYmove - e.pageY);
+                window.scrollBy(posXmove - Math.round(e.pageX/scale), posYmove - Math.round(e.pageY/scale));
         }
     }
 
     const stopDrawing = (e: React.MouseEvent) => {
         isDrawing = false;
         let strokeColorTemp = currentTool == 'eraser' ? '#ffffff' : strokeColor;
-        console.log('stop drawing ' + e.pageX + ' ' + e.pageY);
+        console.log('stop drawing ' + e.pageX/scale + ' ' + e.pageY/scale);
         if (currentTool == 'rectangle' || currentTool == 'circle' || currentTool == 'triangle') {
-            posX.push(e.pageX);
-            posY.push(e.pageY);
+            posX.push(Math.round(e.pageX/scale));
+            posY.push(Math.round(e.pageY/scale));
             if (isFill) {
-                posX.push(e.pageX);
-                posY.push(e.pageY);
+                posX.push(Math.round(e.pageX/scale));
+                posY.push(Math.round(e.pageY/scale));
             }
         }
         if (posX.length > 0 && posY.length > 0) {

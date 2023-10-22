@@ -27,6 +27,8 @@ interface BoardState {
     setIsFill: (isFill: boolean) => void
     currentTool: string
     setCurrentTool: (tool: string) => void
+    scale: number
+    setScale: (isUp: boolean) => void
 }
 
 export const useBoardStore = create<BoardState>((set, get) => ({
@@ -148,5 +150,16 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         set({
             currentTool: tool
         })
-    }
+    },
+    scale: 1,
+    setScale: (isUp: Boolean) => {
+        if (isUp)
+            set({
+                scale: get().scale + 0.3 < 5 ? get().scale + 0.3 : get().scale
+            })
+        else
+            set({
+                scale: get().scale - 0.3 >= 1 ? get().scale - 0.3 : get().scale
+            })
+    },
 }))

@@ -2,8 +2,10 @@ import { useNavigate } from "react-router-dom";
 import { IBoard } from "../interfaces/board.interface";
 import { useBoardStore } from "../stores/boardsStore";
 import Canvas from "./Canvas";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { variables } from "../Variables";
+import { HttpTransportType, HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { IDrawing } from "../interfaces/drawing.interface";
 
 function Board() {
     const user = useBoardStore(state => state.user);
@@ -21,6 +23,7 @@ function Board() {
     const isFill = useBoardStore(state => state.isFill);
     const setIsFill = useBoardStore(state => state.setIsFill);
     const setCurrentTool = useBoardStore(state => state.setCurrentTool);
+    const setScale = useBoardStore(state => state.setScale);
 
     const navigate = useNavigate();
 
@@ -28,6 +31,8 @@ function Board() {
         setBoards();
         setDrawings();
     }, []);
+
+    console.log(document.getElementById('canvas'))
 
     const toogleOptions = () => {
         const options = document.getElementById('options')!;
@@ -37,10 +42,25 @@ function Board() {
             options.classList.replace('d-flex', 'd-none');
     }
 
+    // let canvasRef: React.MutableRefObject<HTMLCanvasElement>;
+    // canvasRef = useRef<HTMLCanvasElement>(document.getElementById('canvas') as HTMLCanvasElement);
+    // const savePhoto = () => {
+    //     const link = document.createElement('a');
+    //     link.download = `${Date.now()}.jpg`;
+    //     console.log(canvasRef.current)
+    //     link.href = canvasRef.current.toDataURL();
+    //     link.click();
+    // }
+
+
+
+    
 
     return (
-        <div id="board" className="position-absolute main-window">
-            <Canvas />
+        <>
+            <div id="board" className="main-window d-flex">
+                <Canvas/>
+            </div>
             <div id="info" className="position-fixed border d-flex flex-column bg-white">
                 <div className="fs-4 m-2 p-2">
                     {boards.find(board => board.id == currentBoardId)?.name}
@@ -55,6 +75,18 @@ function Board() {
                 <div className="rounded-circle tool-icon m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-90deg-right fs-3" viewBox="0 0 16 16">
                         <path fillRule="evenodd" d="M14.854 4.854a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 4H3.5A2.5 2.5 0 0 0 1 6.5v8a.5.5 0 0 0 1 0v-8A1.5 1.5 0 0 1 3.5 5h9.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4z" />
+                    </svg>
+                </div>
+            </div>
+            <div id="zooms" className="position-fixed border d-flex bg-white">
+                <div onClick={() => setScale(true)} className="rounded-circle tool-icon m-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-plus-lg" viewBox="0 0 16 16">
+                        <path fillRule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z" />
+                    </svg>
+                </div>
+                <div onClick={() => setScale(false)} className="rounded-circle tool-icon m-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-dash-lg" viewBox="0 0 16 16">
+                        <path fillRule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z" />
                     </svg>
                 </div>
             </div>
@@ -99,6 +131,14 @@ function Board() {
                         </svg>
                     </div>
                 </label>
+                <label className="input-label rounded-circle">
+                    <input onClick={e => setCurrentTool(e.currentTarget.value)} type="radio" name="tools" value="move" />
+                    <div className="rounded-circle p-3 tool-icon m-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrows-move" viewBox="0 0 16 16">
+                            <path fillRule="evenodd" d="M7.646.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 1.707V5.5a.5.5 0 0 1-1 0V1.707L6.354 2.854a.5.5 0 1 1-.708-.708l2-2zM8 10a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 14.293V10.5A.5.5 0 0 1 8 10zM.146 8.354a.5.5 0 0 1 0-.708l2-2a.5.5 0 1 1 .708.708L1.707 7.5H5.5a.5.5 0 0 1 0 1H1.707l1.147 1.146a.5.5 0 0 1-.708.708l-2-2zM10 8a.5.5 0 0 1 .5-.5h3.793l-1.147-1.146a.5.5 0 0 1 .708-.708l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L14.293 8.5H10.5A.5.5 0 0 1 10 8z" />
+                        </svg>
+                    </div>
+                </label>
                 <div onClick={toogleOptions} className="rounded-circle p-3 tool-icon m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-three-dots fs-3" viewBox="0 0 16 16">
                         <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
@@ -125,8 +165,7 @@ function Board() {
                     </svg>
                 </div>
             </div>
-        </div>
-
+        </>
     );
 }
 

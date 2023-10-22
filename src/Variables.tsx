@@ -1,5 +1,6 @@
 export const variables = {
     API_URL: "https://localhost:7256/api",
+    SOCKET_URL: "wss://localhost:7256/chat-hub",
     $USER: "user_local",
     $CURRENT_BOARD: "current_board",
     $WIDTH: "paint_width",

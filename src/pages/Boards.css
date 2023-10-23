@@ -139,6 +139,14 @@
     border-radius: 50px;
 }
 
+/* Board-save */
+
+#save{
+    bottom: 50px;
+    right: 50px;
+    border-radius: 50px;
+}
+
 /* Canvas */
 
 canvas {

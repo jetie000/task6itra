@@ -25,15 +25,17 @@ function Board() {
     const setIsFill = useBoardStore(state => state.setIsFill);
     const setCurrentTool = useBoardStore(state => state.setCurrentTool);
     const setScale = useBoardStore(state => state.setScale);
-
+    const connection = useBoardStore(state => state.connection);
+    const drawDrawings = useBoardStore(state => state.drawDrawings);
+    const removeDrawing = useBoardStore(state => state.removeDrawing);
+    const getCtx = useBoardStore(state => state.getCtx);
+    const savePhoto = useBoardStore(state => state.savePhoto);
     const navigate = useNavigate();
 
     useEffect(() => {
         setBoards();
         setDrawings();
     }, []);
-
-    console.log(document.getElementById('canvas'))
 
     const toogleOptions = () => {
         const options = document.getElementById('options')!;
@@ -43,20 +45,19 @@ function Board() {
             options.classList.replace('d-flex', 'd-none');
     }
 
-    // let canvasRef: React.MutableRefObject<HTMLCanvasElement>;
-    // canvasRef = useRef<HTMLCanvasElement>(document.getElementById('canvas') as HTMLCanvasElement);
-    // const savePhoto = () => {
-    //     const link = document.createElement('a');
-    //     link.download = `${Date.now()}.jpg`;
-    //     console.log(canvasRef.current)
-    //     link.href = canvasRef.current.toDataURL();
-    //     link.click();
-    // }
+    const leaveRoom = async () => {
+        let RoomIdCon = String(currentBoardId);
+        let UserName = user;
+        leaveBoard();
+        navigate('/boards');
+        await connection.invoke("LeaveRoom", { UserName, RoomIdCon });
+        connection.stop();
+    }
 
     return (
         <>
             <div id="board" className="main-window d-flex">
-                <Canvas/>
+                <Canvas />
             </div>
             <div id="info" className="position-fixed border d-flex flex-column bg-white">
                 <div className="fs-4 m-2 p-2">
@@ -72,14 +73,9 @@ function Board() {
                 </div>)}
             </div>
             <div id="moves" className="position-fixed border d-flex bg-white">
-                <div className="rounded-circle tool-icon m-2">
+                <div onClick={() => { removeDrawing(); drawDrawings(getCtx()!); }} className="rounded-circle tool-icon m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-90deg-left fs-3" viewBox="0 0 16 16">
                         <path fillRule="evenodd" d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4z" />
-                    </svg>
-                </div>
-                <div className="rounded-circle tool-icon m-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-90deg-right fs-3" viewBox="0 0 16 16">
-                        <path fillRule="evenodd" d="M14.854 4.854a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 4H3.5A2.5 2.5 0 0 0 1 6.5v8a.5.5 0 0 0 1 0v-8A1.5 1.5 0 0 1 3.5 5h9.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4z" />
                     </svg>
                 </div>
             </div>
@@ -163,10 +159,17 @@ function Board() {
                 <input onChange={e => setWidth(Number(e.target.value))} type="range" defaultValue={width} min={1} max={50} step={1} className="form-range" id="widthRange" />
             </div>
             <div id="leave" className="position-fixed border bg-white">
-                <div onClick={() => { leaveBoard(); navigate('/boards'); }} className="rounded-circle tool-icon m-2">
+                <div onClick={leaveRoom} className="rounded-circle tool-icon m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-box-arrow-left fs-3" viewBox="0 0 16 16">
                         <path fillRule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z" />
                         <path fillRule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z" />
+                    </svg>
+                </div>
+            </div>
+            <div id="save" className="position-fixed border bg-white">
+                <div onClick={savePhoto} className="rounded-circle tool-icon m-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-image-fill" viewBox="0 0 16 16">
+                        <path d="M.002 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-12a2 2 0 0 1-2-2V3zm1 9v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12zm5-6.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0z" />
                     </svg>
                 </div>
             </div>
